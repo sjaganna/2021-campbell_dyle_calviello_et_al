@@ -1,0 +1,23 @@
+GO biological process complete	"genes-in-group	"	genes-in-data	expected	fold_enrichment	pval	FDR	neglog10 FDR	cluster
+negative regulation of cell differentiation (GO:0045596)	638	23	5.3	4.34	5.69E-09	4.49E-05	4.35	1
+positive regulation of cell population proliferation (GO:0008284)	932	28	7.74	3.62	5.31E-09	8.37E-05	4.08	1
+"negative regulation of transcription, DNA-templated (GO:0045892)"	1288	27	10.69	2.52	9.99E-06	1.97E-02	1.71	1
+regulation of developmental process (GO:0050793)	2441	103	65.66	1.57	5.97E-06	3.14E-02	1.50	2
+regulation of multicellular organismal process (GO:0051239)	2647	109	71.2	1.53	9.08E-06	2.87E-02	1.54	2
+regulation of molecular function (GO:0065009)	3178	127	85.49	1.49	5.90E-06	4.66E-02	1.33	2
+positive regulation of metabolic process (GO:0009893)	3719	144	100.04	1.44	5.78E-06	9.12E-02	1.04	2
+response to oxygen-glucose deprivation (GO:0090649)	10	7	1.11	6.29	7.84E-04	3.84E-02	1.42	3
+regulation of endoplasmic reticulum unfolded protein response (GO:1900101)	31	12	3.45	3.48	7.84E-04	3.85E-02	1.41	3
+"mRNA splicing, via spliceosome (GO:0000398)"	302	98	33.59	2.92	4.10E-17	1.35E-14	13.87	3
+ribonucleoprotein complex export from nucleus (GO:0071426)	127	36	14.13	2.55	4.73E-06	4.24E-04	3.37	3
+ubiquitin-dependent protein catabolic process (GO:0006511)	533	115	59.29	1.94	9.94E-10	1.39E-07	6.86	3
+mitotic cell cycle (GO:0000278)	761	169	92.3	1.83	7.55E-12	3.72E-09	8.43	4
+DNA repair (GO:0006281)	530	117	64.28	1.82	2.51E-08	5.82E-06	5.24	4
+cytoskeleton organization (GO:0007010)	1204	227	146.04	1.55	1.92E-09	5.14E-07	6.29	4
+regulation of protein localization (GO:0032880)	899	154	109.04	1.41	8.90E-05	7.13E-03	2.15	4
+regulation of apoptotic process (GO:0042981)	1479	246	179.39	1.37	4.14E-06	4.80E-04	3.32	4
+regulation of myotube differentiation (GO:0010830)	40	10	1.34	7.48	3.72E-06	3.77E-04	3.42	5
+positive regulation of cell differentiation (GO:0045597)	827	68	27.63	2.46	5.75E-11	1.46E-08	7.84	5
+actin cytoskeleton organization (GO:0030036)	524	43	17.5	2.46	3.57E-07	5.03E-05	4.30	5
+negative regulation of multicellular organismal process (GO:0051241)	1002	78	33.47	2.33	3.68E-11	1.00E-08	8.00	5
+regulation of intracellular signal transduction (GO:1902531)	1768	109	59.06	1.85	1.75E-09	3.46E-07	6.46	5

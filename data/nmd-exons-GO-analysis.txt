@@ -1,0 +1,4 @@
+GO biological process complete	genes-in-group 	genes-in-data	expected	fold_enrichment	pval	FDR	neglog10 FDR
+regulation of transepithelial transport (GO:0150111)	4	2	0.01	 > 100	1.19E-04	4.83E-02	1.316052869
+ribonucleoprotein complex export from nucleus (GO:0071426)	127	5	0.36	13.74	3.75E-05	2.47E-02	1.607303047
+"mRNA splicing, via spliceosome (GO:0000398)"	302	11	0.87	12.71	1.19E-09	9.39E-06	5.027334408
