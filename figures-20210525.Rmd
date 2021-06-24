@@ -558,21 +558,15 @@ ggplot(data=qc_metadf,
 
 ##### Figure 4
 ```{r}
-# first unzip the file `data/dexseq_nmd.csv.zip`
-df <- read_csv("data/dexseq_nmd.csv")
 
-df<-df[which(df$padj<.01),]
-df <- df %>% filter(NMD_cand != "shared_feature")
+load( "data/DE_ORFDEX.RData")
 
-name="Ribo-seq"
-axm<-max(abs(df$log2FC),na.rm = T)
-  
-# colsa<-alpha(c("#042333","grey90", "grey50"),c(0.7, 0.7, 0.5))
-# names(colsa)<-c("NMD","canonical", "shared_feature")
+df<-ORFDEX
 
 colsa<-alpha(c("#042333", "dark grey"),c(.7,.4))
 names(colsa)<-c("NMD","canonical")
 
+# M-A plot
 ggplot(df %>% arrange(NMD_cand),
        aes(x=exonBaseMean+1, y=log2FC,
            color=NMD_cand,
@@ -587,19 +581,19 @@ ggplot(df %>% arrange(NMD_cand),
   xlab(label = "log10 base expression") + 
   ylab(label = "log2 fold change DUX4/control")  + mytheme + geom_hline(yintercept=0, linetype="dashed", color = "black")
 
-# need to compare code with Lorenzo - my plot looks different from his. 
 
-# ggplot(df,aes(y=log2FC,x=NMD_cand,group=NMD_cand,color=NMD_cand)) +
-#     geom_jitter(alpha=.06) +
-#     stat_summary(position=position_dodge(.6),size=.7) +
-#     scale_color_manual(values = colsa,"ORF group") +
-#     theme_classic() +
-#     xlab("") +
-#     ylab("Ribo-seq log2FC") +
-#     theme(axis.title.x = element_text(size=22),axis.text.x  = element_text(angle=45, vjust=0.5, size=13)) +
-#     theme(axis.title.y = element_text(size=18),axis.text.y  = element_text(angle=0, vjust=0.5, size=15))  +
-#     theme(strip.text.x = element_text(size=10, face="bold"),strip.text.y = element_text(size=24),strip.background = element_rect(colour="black", fill="white")) + stat_compare_means(label="p.signif",method = "wilcox.test",hide.ns = F,comparisons = comps,label.y = 6) + facet_wrap(.~condition,ncol = 4) + coord_cartesian(ylim=c(-7,7)) +theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
-#                                             axis.ticks.x=element_blank())
+# boxplot
+ggplot(df,aes(y=log2FC,x=NMD_cand,group=NMD_cand,fill=NMD_cand)) +
+    geom_jitter(alpha=.06) +
+    stat_summary(position=position_dodge(.6),size=.7, alpha = 1, pch= 21, color= "black") +
+    scale_fill_manual(values = colsa,"ORF group") +
+    theme_classic() +
+    xlab("") +
+    ylab("Ribo-seq log2FC") +
+    theme(axis.title.x = element_text(size=22),axis.text.x  = element_text(angle=45, vjust=0.5, size=13)) +
+    theme(axis.title.y = element_text(size=18),axis.text.y  = element_text(angle=0, vjust=0.5, size=15))  +
+    theme(strip.text.x = element_text(size=10, face="bold"),strip.text.y = element_text(size=24),strip.background = element_rect(colour="black", fill="white")) + stat_compare_means(label="p.signif",method = "wilcox.test",hide.ns = F,comparisons = comps,label.y = 6) + facet_wrap(.~condition,ncol = 4) + coord_cartesian(ylim=c(-7,7)) +theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+                                            axis.ticks.x=element_blank())
 
 ## GO analysis
 nmd_exons_GO_analysis <- read_delim("data/nmd-exons-GO-analysis.txt",
