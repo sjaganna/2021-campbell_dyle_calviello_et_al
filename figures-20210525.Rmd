@@ -558,47 +558,9 @@ ggplot(data=qc_metadf,
 
 ##### Figure 4
 ```{r}
-load("data/ORFDEX_DUX4_ORFDEX.RData")
-load("data/ORFDEX_DUX4_ORFquant_feats.RData")
+# first unzip the file `data/dexseq_nmd.csv.zip`
+df <- read_csv("data/dexseq_nmd.csv")
 
-dexres=ORFDEX$Ribo$ORFDEX_unq
-featss=ORFDEX$ORFquant_features
-
-nmdisi<-featss$Distance_to_lastExEx>0
-featss$NMD_cand<-"canonical"
-featss$NMD_cand[sum(!nmdisi)==0]<-"NMD"
-featss$NMD_cand[sum(!nmdisi)>0 & sum(nmdisi)>0]<-"shared_feature"
-   
-nms<-names(dexres)
-nms=nms[nms!="Intercept"]
-list_ress<-list()
-
-for(nm in nms){
-    des<-data.frame(dexres[[nm]])
-    des$condition=nm
-    colnames(des)[grep(colnames(des),pattern = "log2")]<-"log2FC"
-
-    des<-as.data.frame(des,stringsAsFactors = F)
-    #des$ORF_category<-featss1$ORF_category_Tx_compatible
-    des$gene_biotype<-featss$gene_biotype
-    des$gene_name<-featss$gene_name
-    
-    des$dataset=nm
-    #des$compatible_biotype<-featss1$compatible_biotype
-    des$NMD_cand<-featss$NMD_cand
-    list_ress[[nm]]<-des
-}
-
-df<-do.call(list_ress,what = rbind)
-rownames(df)<-NULL
-df<-df[!is.na(df$log2FC),]
-df$tx_group<-"No_change"
-df$tx_group[df$padj<0.01 &  df$log2FC>0 ]<-"Upregulated"
-df$tx_group[df$padj<0.01 &  df$log2FC<0 ]<-"Downregulated"
-df$tx_group<-factor(df$tx_group,levels = c("No_change","Upregulated","Downregulated"))
-
-#df$featureID<-df$compatible_biotype
-#df$featureID[df$tx_group=="No_change"]<-"No_change"
 df<-df[which(df$padj<.01),]
 df <- df %>% filter(NMD_cand != "shared_feature")
 
@@ -625,10 +587,10 @@ ggplot(df %>% arrange(NMD_cand),
   xlab(label = "log10 base expression") + 
   ylab(label = "log2 fold change DUX4/control")  + mytheme + geom_hline(yintercept=0, linetype="dashed", color = "black")
 
-# need to compare code with Lorenzo - my plot does not reproduce his. 
+# need to compare code with Lorenzo - my plot looks different from his. 
 
-# ggplot(df,aes(y=log2FC,x=NMD_cand,group=NMD_cand,color=NMD_cand)) + 
-#     geom_jitter(alpha=.06) + 
+# ggplot(df,aes(y=log2FC,x=NMD_cand,group=NMD_cand,color=NMD_cand)) +
+#     geom_jitter(alpha=.06) +
 #     stat_summary(position=position_dodge(.6),size=.7) +
 #     scale_color_manual(values = colsa,"ORF group") +
 #     theme_classic() +
