@@ -584,7 +584,7 @@ ggplot(df %>% arrange(NMD_cand),
 
 # boxplot
 ggplot(df,aes(y=log2FC,x=NMD_cand,group=NMD_cand,fill=NMD_cand)) +
-    geom_jitter(alpha=.06) +
+    geom_jitter(alpha=.06, pch = 20) +
     stat_summary(position=position_dodge(.6),size=.7, alpha = 1, pch= 21, color= "black") +
     scale_fill_manual(values = colsa,"ORF group") +
     theme_classic() +
