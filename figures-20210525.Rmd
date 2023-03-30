@@ -1,7 +1,7 @@
 ---
-title: "20210412-figures"
+title: "20230330-figures"
 author: "Sujatha Jagannathan"
-date: "4/12/2021"
+date: "3/30/2023"
 output: html_document
 ---
 
@@ -49,14 +49,14 @@ mytheme <- theme_few(base_size = 14) +
 ```{r}
 deseq2_foldchange <- read_csv("data/deseq2-foldchange.csv")
 
-yao_dux4_target_ddu251supp_table1 <- read_excel("data/yao-dux4-target-ddu251supp_table1.xls", skip = 1)
+yao_dux4_target_ddu251supp_table1 <- read_excel("data/ddu251supp_table1.xls", skip = 1)
 
 target_genes <- yao_dux4_target_ddu251supp_table1[, c(1:2)]
 
 ```
 
 
-##### Figure 2
+##### Figure S1
 ```{r}
 data <- deseq2_foldchange[, c(2:54)]
 
@@ -80,20 +80,45 @@ data_rna_long <- data %>%
 colsa<-alpha(c("dark grey", "#042333"),c(.2,.7))
 #names(colsa)<-c("target","non-target")
 
+data_target <- data_rna_long %>% filter(target_status == "true")
+
+# ggplot(data_rna_long, 
+#             aes(
+#               x = log10(baseMean_RNA), 
+#               y = log2FoldChange)) + 
+#   geom_point(aes(fill = target_status, color = target_status, pch = significance), size = 2)+ 
+#   facet_wrap(~as_factor(time)) + 
+#   scale_fill_manual(values = colsa,"DUX4 target status") +
+#   scale_color_manual(values = colsa,"DUX4 target status") +
+#   scale_shape_manual(values = c(1, 21)) + 
+#   #theme(aspect.ratio = 1) +
+#   #ggtitle("DUX4") + 
+#   xlab(label = "log10 base expression") + 
+#   ylab(label = "log2 fold change DUX4/control")  + mytheme + geom_hline(yintercept=0, linetype="dashed", color = "black")
+    
 ggplot(data_rna_long, 
             aes(
               x = log10(baseMean_RNA), 
               y = log2FoldChange)) + 
-  geom_point(aes(fill = target_status, color = target_status, pch = significance), size = 2)+ 
-  facet_wrap(~as_factor(time)) + 
-  scale_fill_manual(values = colsa,"DUX4 target status") +
-    scale_color_manual(values = colsa,"DUX4 target status") +
-  scale_shape_manual(values = c(1, 21)) + 
-  #theme(aspect.ratio = 1) +
-  #ggtitle("DUX4") + 
-  xlab(label = "log10 base expression") + 
-  ylab(label = "log2 fold change DUX4/control")  + mytheme + geom_hline(yintercept=0, linetype="dashed", color = "black")
-
+    geom_hex(bins = 40) + 
+  scale_fill_distiller(
+                    palette = 'PuBuGn',
+                    direction = 1, 
+                    #values = c(0, 0.5), 
+                    element_text(size=5)) +
+    xlab(label = "log10 base expression") + 
+    ylab(label = "log2 fold change DUX4/control")  + 
+    mytheme + 
+    geom_hline(yintercept=0, linetype="dashed", color = "black") +
+    facet_wrap(~as_factor(time)) +
+    geom_point(data_target, 
+             mapping = aes(
+                           x = log10(baseMean_RNA), 
+                           y = log2FoldChange),
+             color='#042333',
+             size=1,
+             alpha=0.8) 
+  
 # number of significantly changed genes
 
 temp <- data_rna_long %>% filter(significance == "true")
@@ -113,187 +138,6 @@ table(temp$time, temp$up_down)
 # source of gene sets: https://www.gsea-msigdb.org/gsea/msigdb/search.jsp
 
 data <- deseq2_foldchange[, c(2:54)]
-
-# ubiquitin genes
-ubiquitin_genes <- read_csv("data/GOBP_PROTEIN_POLYUBIQUITINATION.txt", col_names = FALSE)
-names(ubiquitin_genes) <- c("gene_name")
-
-# ubquitin_data <- data %>% filter( external_gene_name %in% ubiquitin_genes$gene_name) %>% select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1) | (padj.08h_RNA < 0.01 & abs(log2FoldChange.08h_RNA) > 1) | (padj.14h_RNA < 0.01 & abs(log2FoldChange.14h_RNA) > 1)) %>% unique()
-
-ubiquitin_data <- data %>% filter( external_gene_name %in% ubiquitin_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-
-ubiquitin_data <- ubiquitin_data[complete.cases(ubiquitin_data), ]
-
-# splicing genes
-splicing_genes <- read_csv("data/GOBP_RNA_SPLICING.txt", col_names = FALSE)
-names(splicing_genes) <- c("gene_name")
-
-splicing_data <- data %>% filter( external_gene_name %in% splicing_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-splicing_data <- splicing_data[complete.cases(splicing_data), ]
-
-# RNA processing genes
-rna_processing_genes <- read_csv("data/GOBP_MRNA_PROCESSING.txt", col_names = FALSE)
-names(rna_processing_genes) <- c("gene_name")
-
-rna_processing_data <- data %>% filter( external_gene_name %in% rna_processing_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-rna_processing_data <- rna_processing_data[complete.cases(rna_processing_data), ]
-
-# WNT signaling genes
-wnt_signaling_genes <- read_csv("data/GOBP_CELL_CELL_SIGNALING_BY_WNT.txt", col_names = FALSE)
-names(wnt_signaling_genes) <- c("gene_name")
-
-wnt_signaling_data <- data %>% filter( external_gene_name %in% wnt_signaling_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-wnt_signaling_data <- wnt_signaling_data[complete.cases(wnt_signaling_data), ]
-
-# ISR genes
-isr_genes <- read_csv("data/GOBP_INTEGRATED_STRESS_RESPONSE_SIGNALING.txt", col_names = FALSE)
-names(isr_genes) <- c("gene_name")
-
-isr_data <- data %>% filter( external_gene_name %in% isr_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-isr_data <- isr_data[complete.cases(isr_data), ]
-
-# anoikis genes
-anoikis_genes <- read_csv("data/GOBP_ANOIKIS.txt", col_names = FALSE)
-names(anoikis_genes) <- c("gene_name")
-
-anoikis_data <- data %>% filter( external_gene_name %in% anoikis_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-anoikis_data <- anoikis_data[complete.cases(anoikis_data), ]
-
-# Apoptosis genes
-apoptosis_genes <- read_csv("data/GOBP_INTRINSIC_APOPTOTIC_SIGNALING_PATHWAY.txt", col_names = FALSE)
-names(apoptosis_genes) <- c("gene_name")
-
-apoptosis_data <- data %>% filter( external_gene_name %in% apoptosis_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-apoptosis_data <- apoptosis_data[complete.cases(apoptosis_data), ]
-
-# muscle genes
-muscle_genes <- read_csv("data/GOBP_MUSCLE_FIBER_DEVELOPMENT.txt", col_names = FALSE)
-names(muscle_genes) <- c("gene_name")
-
-muscle_data <- data %>% filter( external_gene_name %in% muscle_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-muscle_data <- muscle_data[complete.cases(muscle_data), ]
-
-# oxidative stress genes
-oxidative_stress_genes <- read_csv("data/GOBP_RESPONSE_TO_OXIDATIVE_STRESS.txt", col_names = FALSE)
-names(oxidative_stress_genes) <- c("gene_name")
-
-oxidative_stress_data <- data %>% filter( external_gene_name %in% oxidative_stress_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-oxidative_stress_data <- oxidative_stress_data[complete.cases(oxidative_stress_data), ]
-
-# MAPK genes
-mapk_genes <- read_csv("data/KEGG_MAPK_SIGNALING_PATHWAY.txt", col_names = FALSE)
-names(mapk_genes) <- c("gene_name")
-
-mapk_data <- data %>% filter( external_gene_name %in% mapk_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-mapk_data <- mapk_data[complete.cases(mapk_data), ]
-
-# viral response genes
-viral_response_genes <- read_csv("data/GOBP_DEFENSE_RESPONSE_TO_VIRUS.txt", col_names = FALSE)
-names(viral_response_genes) <- c("gene_name")
-
-viral_response_data <- data %>% filter( external_gene_name %in% viral_response_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-viral_response_data <- viral_response_data[complete.cases(viral_response_data), ]
-
-# cell cycle genes
-cell_cycle_genes <- read_csv("data/GOBP_CELL_CYCLE_PHASE_TRANSITION.txt", col_names = FALSE)
-names(cell_cycle_genes) <- c("gene_name")
-
-cell_cycle_data <- data %>% filter( external_gene_name %in% cell_cycle_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-cell_cycle_data <- cell_cycle_data[complete.cases(cell_cycle_data), ]
-
-# G2-M genes
-g2m_genes <- read_csv("data/GOBP_CELL_CYCLE_G2_M_PHASE_TRANSITION.txt", col_names = FALSE)
-names(g2m_genes) <- c("gene_name")
-
-g2m_data <- data %>% filter( external_gene_name %in% g2m_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-g2m_data <- g2m_data[complete.cases(g2m_data), ]
-
-# G1-S genes
-g1s_genes <- read_csv("data/GOBP_CELL_CYCLE_G1_S_PHASE_TRANSITION.txt", col_names = FALSE)
-names(g1s_genes) <- c("gene_name")
-
-g1s_data <- data %>% filter( external_gene_name %in% g1s_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-g1s_data <- g1s_data[complete.cases(g1s_data), ]
-
-# actin genes
-actin_genes <- read_csv("data/GOBP_ACTIN_FILAMENT_ORGANIZATION.txt", col_names = FALSE)
-names(actin_genes) <- c("gene_name")
-
-actin_data <- data %>% filter( external_gene_name %in% actin_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-actin_data <- actin_data[complete.cases(actin_data), ]
-
-# ECM genes
-ecm_genes <- read_csv("data/GOMF_EXTRACELLULAR_MATRIX_STRUCTURAL_CONSTITUENT.txt", col_names = FALSE)
-names(ecm_genes) <- c("gene_name")
-
-ecm_data <- data %>% filter( external_gene_name %in% ecm_genes$gene_name) %>% dplyr::select(ensembl_gene_id, external_gene_name, log2FoldChange.04h_RNA, log2FoldChange.08h_RNA, log2FoldChange.14h_RNA, padj.04h_RNA, padj.08h_RNA, padj.14h_RNA) %>% filter((padj.04h_RNA < 0.01 & abs(log2FoldChange.04h_RNA) > 1)) %>% unique()
-ecm_data <- ecm_data[complete.cases(ecm_data), ]
-
-# heatmaps
-mat_breaks = seq(-5, 5, by = 0.5)
-
-mat <- isr_data[3:5] #15
-rownames(mat) <- isr_data$external_gene_name
-
-mat <- anoikis_data[3:5] #19
-rownames(mat) <- anoikis_data$external_gene_name
-
-mat <- muscle_data[3:5] #24
-rownames(mat) <- muscle_data$external_gene_name
-
-mat <- viral_response_data[3:5] #100
-rownames(mat) <- viral_response_data$external_gene_name
-
-mat <- mapk_data[3:5] #110
-rownames(mat) <- mapk_data$external_gene_name
-
-mat <- apoptosis_data[3:5] #132
-rownames(mat) <- apoptosis_data$external_gene_name
-
-mat <- ubiquitin_data[3:5] #159
-rownames(mat) <- ubiquitin_data$external_gene_name
-
-mat <- oxidative_stress_data[3:5] #164
-rownames(mat) <- oxidative_stress_data$external_gene_name
-
-mat <- splicing_data[3:5] #191
-rownames(mat) <- splicing_data$external_gene_name
-
-mat <- rna_processing_data[3:5] #212
-rownames(mat) <- rna_processing_data$external_gene_name
-
-mat <- wnt_signaling_data[3:5] #223
-rownames(mat) <- wnt_signaling_data$external_gene_name
-
-mat <- cell_cycle_data[3:5] #223
-rownames(mat) <- cell_cycle_data$external_gene_name
-
-mat <- g1s_data[3:5] #223
-rownames(mat) <- g1s_data$external_gene_name
-
-mat <- g2m_data[3:5] #223
-rownames(mat) <- g2m_data$external_gene_name
-
-mat <- actin_data[3:5] #223
-rownames(mat) <- actin_data$external_gene_name
-
-mat <- ecm_data[3:5] #223
-rownames(mat) <- ecm_data$external_gene_name
-
-# plotting the heatmaps one gene set at a time
-set.seed(123)
-pheatmap(mat,
-color = cividis(length(mat_breaks) - 1),
-breaks = mat_breaks, 
-clustering_method = "complete", #specify clustering method
-border_color = "black",
-na_col = "grey90", 
-cluster_rows = T,
-cluster_cols = F,
-legend=F, 
-treeheight_row = 0, 
-labels_col = "", 
-cellwidth = 12, cellheight = 12)
 
 # Fig 2D - Cluster analysis
 data <- deseq2_foldchange[, c(2:54)]
@@ -388,31 +232,64 @@ ggplot(data = GO_analysis_cluster_final, aes(x = GOBP, y = neglog10FDR, fill = c
 
 ```
 
-##### Figure 3
+##### Figure 2
 
 ```{r}
 # input data
 load("data/DE_RiboRNA_coding.RData")
 
+load("data/df_cpm_log2fc.RData")
+
 dfa <- DE_RiboRNA_coding %>% select(gene_id:RiboRNA_padj, TPM_RNA:TPM_Ribo, condition, single_exon:gene_name_ok) %>% separate(gene_id, sep = "\\.", into = c("ensembl_gene_id", "extra")) %>%  mutate(target_status = ifelse(ensembl_gene_id %in% target_genes$Ensembl, "true", "false")) %>% mutate(significance = ifelse(Ribo_padj < 0.01, "true", "false"))  %>%
   mutate(up_down = ifelse(Ribo_log2FC > 0, "up", "down"))
+
+dfa_target <- dfa %>% filter(target_status == "true")
 
 colsa<-alpha(c("dark grey", "#042333"),c(.4,.7))
 #names(colsa)<-c("target","non-target")
 
-ggplot(dfa %>% arrange(target_status), 
+# ggplot(dfa %>% arrange(target_status), 
+#             aes(
+#               x = log10(Ribo_baseMean), 
+#               y = Ribo_log2FC)) + 
+#   geom_point(aes(fill = target_status, color = target_status, pch = significance), size = 2)+ 
+#   facet_wrap(~as_factor(condition)) + 
+#   scale_fill_manual(values = colsa,"DUX4 target status") +
+#     scale_color_manual(values = colsa,"DUX4 target status") +
+#   scale_shape_manual(values = c(1, 21)) + 
+#   #theme(aspect.ratio = 1) +
+#   #ggtitle("DUX4") + 
+#   xlab(label = "log10 base expression") + 
+#   ylab(label = "log2 fold change DUX4/control")  + mytheme + geom_hline(yintercept=0, linetype="dashed", color = "black")
+
+p <- ggplot(dfa, 
             aes(
               x = log10(Ribo_baseMean), 
               y = Ribo_log2FC)) + 
-  geom_point(aes(fill = target_status, color = target_status, pch = significance), size = 2)+ 
-  facet_wrap(~as_factor(condition)) + 
-  scale_fill_manual(values = colsa,"DUX4 target status") +
-    scale_color_manual(values = colsa,"DUX4 target status") +
-  scale_shape_manual(values = c(1, 21)) + 
-  #theme(aspect.ratio = 1) +
-  #ggtitle("DUX4") + 
-  xlab(label = "log10 base expression") + 
-  ylab(label = "log2 fold change DUX4/control")  + mytheme + geom_hline(yintercept=0, linetype="dashed", color = "black")
+    geom_hex(bins = 40) + 
+  scale_fill_distiller(
+                    palette = 'PuBuGn',
+                    direction = 1, 
+                    #values = c(0, 0.5), 
+                    element_text(size=5)) +
+    xlab(label = "log10 base expression") + 
+    ylab(label = "log2 fold change DUX4/control")  + 
+    mytheme + 
+    geom_hline(yintercept=0, linetype="dashed", color = "black") +
+    facet_wrap(~as_factor(condition)) +
+    geom_point(dfa_target, 
+             mapping = aes(
+                           x = log10(Ribo_baseMean), 
+                           y = Ribo_log2FC),
+             color='#042333',
+             size=1,
+             alpha=0.8) 
+
+p 
+
+pdf(file = "data/orfquant_MA.pdf",width = 9,height = 3.5)
+print(p)
+dev.off()
 
 # table to use for n for various categories  
 DE_table <- dfa %>% filter(significance == "true")
@@ -434,25 +311,61 @@ table(DE_table$tx_type_RiboRNA, DE_table$experiment)
 # RNA vs ribo correlation  
 
 dfa_te <- DE_RiboRNA_coding %>% select(gene_id:RiboRNA_padj, TPM_RNA:TPM_Ribo, condition, single_exon:gene_name_ok) %>% separate(gene_id, sep = "\\.", into = c("ensembl_gene_id", "extra")) %>%  mutate(target_status = ifelse(ensembl_gene_id %in% target_genes$Ensembl, "true", "false")) %>% mutate(significance = ifelse(RiboRNA_padj < 0.01, "true", "false")) 
+
 colsi <- alpha(c("#440154","#3CBB75","gray43","gray10","dark gray"),c(.8,.8,.3,.3,.1))
 names(colsi) <- c("TE_down","TE_up","Concordant_down","Concordant_up","mixed_NS")
-axm <- max(abs(c(dfa$RNA_log2FC,dfa$Ribo_log2FC)),na.rm = T)
+
+# colsi <- alpha(c("#440154","#3CBB75"),c(.8,.8))
+# names(colsi) <- c("TE_down","TE_up")
+# axm <- max(abs(c(dfa$RNA_log2FC,dfa$Ribo_log2FC)),na.rm = T)
+# 
+dfa_select <- dfa_te %>% filter(tx_type_RiboRNA %in% c("TE_down", "TE_up"))
 
 ggplot(dfa_te %>% arrange(desc(tx_type_RiboRNA)),
             aes(x = RNA_log2FC, y = Ribo_log2FC,
                 color = tx_type_RiboRNA,
                 fill = tx_type_RiboRNA,
-                shape = significance)) + 
-    geom_point(size = 2) + 
+                shape = significance)) +
+    geom_point(size = 2) +
     mytheme +
     ylab(paste("Ribo-seq "," log2FC\n",sep = "")) +
     xlab(paste("RNA-seq log2FC\n",sep = "")) +
-    scale_shape_manual(values = c(1, 21)) + 
+    scale_shape_manual(values = c(1, 21)) +
     scale_color_manual(values = colsi,"Tx_class") +
-    scale_fill_manual(values = colsi,"Tx_class") + 
-  geom_hline(yintercept = 0,size=.5) + geom_vline(xintercept = 0,size=.5) + 
-  coord_cartesian(xlim = c(-axm,axm),ylim=c(-axm,axm)) + 
-  facet_wrap(.~experiment,nrow = 1) 
+    scale_fill_manual(values = colsi,"Tx_class") +
+  geom_hline(yintercept = 0,size=.5) + geom_vline(xintercept = 0,size=.5) +
+  coord_cartesian(xlim = c(-10,10),ylim=c(-10,10)) +
+  facet_wrap(.~experiment,nrow = 1)
+
+p <- ggplot(dfa_te, 
+            aes(
+              x = RNA_log2FC, 
+              y = Ribo_log2FC)) + 
+    geom_hex(bins = 40) + 
+  scale_fill_distiller(
+                    palette = 'PuBuGn',
+                    direction = 1, 
+                    #values = c(0, 0.5), 
+                    element_text(size=5)) +
+    xlab(label = "log10 base expression") + 
+    ylab(label = "log2 fold change DUX4/control")  + 
+    mytheme + 
+    geom_hline(yintercept=0, linetype="dashed", color = "black") +
+    facet_wrap(~as_factor(experiment)) +
+    geom_point(dfa_select, 
+             mapping = aes(
+                           x = RNA_log2FC, 
+                           y = Ribo_log2FC, 
+                           color = tx_type_RiboRNA),
+             size=1,
+             alpha=0.8) +
+   scale_color_manual(values = colsi,"Tx_class") 
+
+p 
+
+pdf(file = "data/rna_ribo_scatter.pdf",width = 9,height = 3.5)
+print(p)
+dev.off()
 
 # table to use for n for various categories  
 te_table <- dfa_te %>% filter(significance == "true")
@@ -480,60 +393,9 @@ cor(DE_table_wide %>% filter(condition == "time08h") %>% select(RNA_log2FC, Ribo
 cor(DE_table_wide %>% filter(condition == "time14h") %>% select(RNA_log2FC, Ribo_log2FC), use = "pairwise.complete.obs", method = "pearson")
 # 0.9181838
 
-# combining RNA/Ribo and SILAC data
-
-DE_table_wide_14h <- DE_table_wide %>% filter(condition == "time14h")
-
-load("data/data.rnaseq.silac.static_06072018.Rdata")
-silac_data <- data.rnaseq.silac.static %>% select(geneid, Protein_log2FC = hl.ratio)
-
-rna_ribo_protein_data <- left_join(DE_table_wide_14h, silac_data, by = c("gene_name_ok" = "geneid"))
-
-cor(rna_ribo_protein_data %>% select(RNA_log2FC, Ribo_log2FC, Protein_log2FC), use = "pairwise.complete.obs", method = "pearson")
-
-#                RNA_log2FC Ribo_log2FC Protein_log2FC
-# RNA_log2FC      1.0000000   0.9186658      0.2987130
-# Ribo_log2FC     0.9186658   1.0000000      0.3000128
-# Protein_log2FC  0.2987130   0.3000128      1.0000000
-
-# RNA/Ribo 0.919
-# RNA/Protein 0.300
-# Ribo/Protein 0.299
-
-# using only genes with measurements in all three datasets
-cor(rna_ribo_protein_data %>% select(RNA_log2FC, Ribo_log2FC, Protein_log2FC) %>% filter(complete.cases(.)), use = "pairwise.complete.obs", method = "pearson")
-
-#NMD factor foldchange heatmap
-nmd_genes <- tbl_df(c("UPF1", "UPF2", "UPF3B", "SMG1", "SMG5", "SMG6", "SMG7", "DCP1A", "DCP2", "XRN1", "RBM8A", "EIF4A3", "MAGOH", "CASC3", "GSPT1", "GSPT2", "ETF1")) 
-names(nmd_genes) <- c("gene_name")
-
-nmd_data <- left_join(nmd_genes, DE_table_wide_14h, by = c("gene_name" = "gene_name_ok"))
-nmd_data <- left_join(nmd_data, silac_data, by = c("gene_name" = "geneid"))
-write.csv(nmd_data, file = "data/nmd_factors_data.csv")
-# replace SMG6 hl.ratio with NA
-# read data in again
-nmd_data <- read_csv("data/nmd_factors_data-mod.csv")
-
-mat <- data.frame(nmd_data)
-row.names(mat) <- nmd_data$gene_name
-mat = mat[,c(4,5,7)]
-
-mat_breaks = seq(-2, 2, by = 0.1)
-
-pheatmap(t(mat),
-color = cividis(length(mat_breaks) - 1),
-breaks = mat_breaks, 
-clustering_method = "ward.D2", #specify clustering method
-clustering_distance_rows = "euclidean",
-clustering_distance_columns = "euclidean",
-border_color = "black",
-na_col = "grey90", 
-cluster_rows = F,
-cluster_cols = F,
-cellwidth = 12, cellheight = 12)
 ```
 
-##### Figure S3
+##### Figure S2
 
 ```{r}
 load("data/QC_metacds.RData")
@@ -556,10 +418,24 @@ ggplot(data=qc_metadf,
 
 ```
 
-##### Figure 4
+##### Figure 3 and S3
 ```{r}
 
 load( "data/DE_ORFDEX.RData")
+load("data/df_notover_CDSs.RData")
+load("data/df_cpm_log2fc.RData")
+
+# read coverage over PTC and NTC
+ggplot(total_plot_df) +
+  geom_bar(stat="identity", aes(x=x_vals, y=ribo_vals, color=frame, fill=frame)) +
+  scale_color_viridis(discrete = TRUE, option="D") +
+  scale_fill_viridis(discrete = TRUE, option="D") +
+  geom_line(aes(x=x_vals, y=rna_vals), color="dark grey", alpha=0.7, group=1)+
+  facet_grid(group_txs~time_point,scales = "fixed") +
+  labs(x="Distance from stop codon",
+       y=paste("Average normalized count (289 genes)",sep = "")) +
+  theme_classic() + geom_vline(xintercept = 0,lty=2) +
+  geom_area(aes(x=x_vals, y=rna_vals),color="grey",alpha=.1) 
 
 df<-ORFDEX
 
@@ -592,7 +468,8 @@ ggplot(df,aes(y=log2FC,x=NMD_cand,group=NMD_cand,fill=NMD_cand)) +
     ylab("Ribo-seq log2FC") +
     theme(axis.title.x = element_text(size=22),axis.text.x  = element_text(angle=45, vjust=0.5, size=13)) +
     theme(axis.title.y = element_text(size=18),axis.text.y  = element_text(angle=0, vjust=0.5, size=15))  +
-    theme(strip.text.x = element_text(size=10, face="bold"),strip.text.y = element_text(size=24),strip.background = element_rect(colour="black", fill="white")) + stat_compare_means(label="p.signif",method = "wilcox.test",hide.ns = F,comparisons = comps,label.y = 6) + facet_wrap(.~condition,ncol = 4) + coord_cartesian(ylim=c(-7,7)) +theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
+    theme(strip.text.x = element_text(size=10, face="bold"),strip.text.y = element_text(size=24),strip.background = element_rect(colour="black", fill="white")) + #stat_compare_means(label="p.signif",method = "wilcox.test",hide.ns = F,comparisons = comps,label.y = 6) + 
+  facet_wrap(.~condition,ncol = 4) + coord_cartesian(ylim=c(-7,7)) + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),
                                             axis.ticks.x=element_blank())
 
 ## GO analysis
@@ -605,9 +482,15 @@ nmd_exons_GO_analysis$GOBP <- factor(nmd_exons_GO_analysis$GOBP, levels = nmd_ex
 
 ggplot(data = nmd_exons_GO_analysis, aes(x = GOBP, y = neglog10FDR)) + geom_bar(stat="identity", fill = "#04233370") + mytheme
 
+# fig S3E
+ggplot(df_cpm_log2fc, aes(x=time, y=log2FCs, fill=type)) +
+  geom_boxplot() + theme_minimal_hgrid() + scale_fill_manual(values = c("steelblue","dark grey")) +
+  labs(x="Time after DUX4 induction", y="CPM at stop codon\nlog2FC to 00h", fill="Category") +
+  stat_compare_means(aes(label = after_stat(p.signif)), method = "wilcox.test",paired = T, method.args = list(alternative = "less"),label.y = 6 )+
+  facet_wrap(~seqtype,nrow = 2)
 ```
 
-##### Figure 5
+##### Figure 4
 
 ```{r}
 #input data
